@@ -1,8 +1,16 @@
+const ApiError = require("../exceptions/api-error");
 const userService = require("../service/user-service");
+const { validationResult } = require("express-validator");
 
 class UserController {
     async signup(req, res, next) {
         try {
+            const validationErrors = validationResult(req);
+
+            if(!validationErrors.isEmpty()) {
+                return next(ApiError.BadRequest("Validation error",validationErrors.array()));
+            }
+
             const { email, password } = req.body;
             const userData = await userService.signup(email, password);
 
