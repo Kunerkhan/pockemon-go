@@ -28,6 +28,21 @@ class UserService {
 
         }
     }
+
+    async activate(activationLink) {
+        try {
+            const user = await UserModel.findOne({ activationLink });
+
+            if(!user) {
+                throw new Error("Invalid activation link");
+            }
+    
+            user.isActivated = true;
+            await user.save();
+        } catch(error) {
+            console.log(error);
+        }
+    }
 }
 
 module.exports = new UserService();
