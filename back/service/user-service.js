@@ -39,6 +39,25 @@ class UserService {
             console.log(error);
         }
     }
+    
+    async login(email, password) {
+        const user = await UserModel.findOne({ email });
+
+        if(!user) {
+            throw ApiError.BadRequest(`User with ${email} was not found.`);
+        }
+
+        const isPassSimilar = await bcrypt.compare(password, user.password);
+        if(!isPassSimilar) {
+            throw ApiError.BadRequest("Incorect password.");
+        }
+
+        const userDto = new UserDto(user);
+        const tokens = tokenService.generateTokens({ ...userDto });
+        await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        return { ...tokens, user: userDto };
+    }
 }
 
 module.exports = new UserService();
